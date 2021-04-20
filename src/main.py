@@ -35,3 +35,5 @@ elif game_result == comp_symbol:
 
 elif game_result == "D":
     print("Draw!")
+
+exit()
