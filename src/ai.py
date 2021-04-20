@@ -15,7 +15,7 @@ class RandomAI:
 
 class OptimalAI:
     @staticmethod
-    def minimax(board, depth, maximising, own_symbol):
+    def minimax(board, alpha, beta, depth, maximising, own_symbol):
         opponent_symbol = "X" if own_symbol == "O" else "O"
 
         # Check if we've reached a terminal state. If so, return the state's score.
@@ -28,15 +28,27 @@ class OptimalAI:
         elif result == opponent_symbol:
             return -1 / depth
 
-        scores = []
+        final_score = inf * (-1) ** maximising
 
         for cell in board.get_free_cells():
             board.set_cell(cell, own_symbol if maximising else opponent_symbol)
-            score = OptimalAI.minimax(board, depth + 1, not maximising, own_symbol)
-            scores.append(score)
+            score = OptimalAI.minimax(board, alpha, beta, depth + 1, not maximising, own_symbol)
             board.undo()
 
-        return max(scores) if maximising else min(scores)
+            if maximising:
+                final_score = max(final_score, score)
+                alpha = max(alpha, score)
+                # If the maximiser realises that the minimiser has a better choice than this subtree, break.
+                if beta <= final_score:
+                    break
+            else:
+                final_score = min(final_score, score)
+                beta = min(beta, score)
+                # If the minimiser realises that the maximiser has a better choice than this subtree, break.
+                if alpha >= final_score:
+                    break
+
+        return final_score
 
     @staticmethod
     def move(board, symbol):
@@ -45,7 +57,7 @@ class OptimalAI:
 
         for cell in board.get_free_cells():
             board.set_cell(cell, symbol)
-            score = OptimalAI.minimax(board, 1, False, symbol)
+            score = OptimalAI.minimax(board, -inf, inf, 1, False, symbol)
             board.undo()
 
             if score > best_score:
