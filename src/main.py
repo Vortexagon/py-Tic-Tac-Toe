@@ -1,4 +1,4 @@
-from ai import RandomAI
+from ai import OptimalAI
 from board import Board
 
 
@@ -15,14 +15,13 @@ comp_symbol = "O"
 
 board = Board()
 
-# A game against RandomAI.
+# A game against OptimalAI.
 while not board.is_ended():
-
     print(board)
     board = enter_move(board, user_symbol)
     if board.is_ended():
         break
-    board = RandomAI.move(board, comp_symbol)
+    board = OptimalAI.move(board, comp_symbol)
 
 print(board)
 
