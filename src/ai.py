@@ -14,6 +14,9 @@ class RandomAI:
 
 
 class OptimalAI:
+    # The cache for storing the results of expensive, recursive minimax calls.
+    cache = dict()
+
     @staticmethod
     def minimax(board, alpha, beta, depth, maximising, own_symbol):
         opponent_symbol = "X" if own_symbol == "O" else "O"
@@ -27,6 +30,13 @@ class OptimalAI:
             return 1 / depth
         elif result == opponent_symbol:
             return -1 / depth
+
+        # Create an identifier string based on: the board, alpha, beta, and whether we are trying to maximise or not.
+        state_hash = str([board.board, alpha, beta, maximising])
+
+        # If the result for this state is in the cache, just return that, instead of recursing the subtree.
+        if state_hash in OptimalAI.cache:
+            return OptimalAI.cache[state_hash]
 
         final_score = inf * (-1) ** maximising
 
@@ -48,6 +58,8 @@ class OptimalAI:
                 if alpha >= final_score:
                     break
 
+        # Add our state and its corresponding score to the cache to avoid computing this result in the future.
+        OptimalAI.cache[state_hash] = final_score
         return final_score
 
     @staticmethod
@@ -55,11 +67,13 @@ class OptimalAI:
         best_score = -inf
         best_index = None
 
+        # Test each possible move, and evaluate its strength based on the minimax algorithm.
         for cell in board.get_free_cells():
             board.set_cell(cell, symbol)
             score = OptimalAI.minimax(board, -inf, inf, 1, False, symbol)
             board.undo()
 
+            # If this move is better than the currently best move, replace it.
             if score > best_score:
                 best_score = score
                 best_index = cell
