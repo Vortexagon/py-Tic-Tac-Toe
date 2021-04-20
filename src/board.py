@@ -1,6 +1,7 @@
 class Board:
     def __init__(self):
-        self.board: list = [0] * 9
+        self.board = [0] * 9
+        self.history = []
 
     def __str__(self):
         board_string = ""
@@ -33,8 +34,16 @@ class Board:
     def get_free_cells(self):
         return [i for i in range(9) if self.board[i] == 0]
 
-    def set_cell(self, index, content):
+    def set_cell(self, index, content, save_to_history=True):
+        if save_to_history:
+            self.history.append((index, self.board[index]))
         self.board[index] = content
+
+    def undo(self):
+        last_change = self.history.pop()
+
+        # Set the last change, but don't save this change to the history stack.
+        self.set_cell(last_change[0], last_change[1], False)
 
     def is_ended(self):
         # Convert to 2D list, to check state easier.
