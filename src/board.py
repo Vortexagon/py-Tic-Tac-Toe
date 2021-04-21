@@ -1,66 +1,72 @@
+from copy import deepcopy
+
+
 class Board:
     def __init__(self):
-        self.board = [0] * 9
+        self.board = {"X": 0, "O": 0}
         self.history = []
 
     def __str__(self):
         board_string = ""
 
-        # Four "+" signs each separated by a 7-length "-" sequence.
-        horizontal_border = ("-" * 7).join(["+"] * 4)
-
-        # Four "|" signs each separated by a 7-length space sequence.
-        inner_border = (" " * 7).join(["|"] * 4)
-
-        for i in range(3):
-            board_string += horizontal_border + "\n"
-
-            # To print easier.
-            board = [self.board[0:3], self.board[3:6], self.board[6:9]]
-
-            for j in range(3):
-                if j == 1:
-                    cell_separator = "   |   "
-                    row = [str(elem) if elem != 0 else str(3 * i + index + 1) for (index, elem) in enumerate(board[i])]
-                    board_string += f"|   {cell_separator.join(row)}   |" + "\n"
-
-                else:
-                    board_string += inner_border + "\n"
-
-        board_string += horizontal_border + "\n"
+        for symbol in self.board.keys():
+            board_string += symbol + ": " + bin(self.board[symbol])[2:].zfill(9) + "\n"
 
         return board_string
 
     def get_free_cells(self):
-        return [i for i in range(9) if self.board[i] == 0]
+        squashed_board = 0
+        for symbol in self.board.keys():
+            squashed_board |= self.board[symbol]
 
-    def set_cell(self, index, content, save_to_history=True):
-        if save_to_history:
-            self.history.append((index, self.board[index]))
-        self.board[index] = content
+        free_cells = squashed_board ^ 0b111_111_111
+        return [i for i in range(9) if (256 >> i) & free_cells]
+
+    def set_cell(self, index, chosen_layer):
+        if chosen_layer not in self.board.keys():
+            raise KeyError(f"{chosen_layer} isn't an entry in the bitboard.")
+
+        on_mask = 1 << (8 - index)
+        off_mask = on_mask ^ 0b111_111_111
+
+        self.history.append(deepcopy(self.board))
+
+        for layer in self.board.keys():
+            if layer == chosen_layer:
+                self.board[layer] |= on_mask
+            else:
+                self.board[layer] &= off_mask
+
+    def clear_cell(self, index):
+        bit_mask = 1 << (8 - index)
+        not_bit_mask = bit_mask ^ 0b111_111_111
+
+        self.history.append(deepcopy(self.board))
+
+        for symbol in self.board.keys():
+            self.board[symbol] &= not_bit_mask
 
     def undo(self):
-        last_change = self.history.pop()
-
-        # Set the last change, but don't save this change to the history stack.
-        self.set_cell(last_change[0], last_change[1], False)
+        if len(self.history) > 0:
+            self.board = deepcopy(self.history.pop())
 
     def is_ended(self):
-        # Convert to 2D list, to check state easier.
-        board = [self.board[0:3], self.board[3:6], self.board[6:9]]
+        win_masks = [
+            *[0b111 << index for index in range(0, 9, 3)],
+            *[0b100_100_100 >> index for index in range(3)],
+            *[0b100010001, 0b001010100]
+        ]
 
-        for symbol in "XO":
-            #  Check rows, columns, and diagonals.
-            if any(board[i] == [symbol] * 3 for i in range(3)) or \
-                    any(all(board[i][j] == symbol for i in range(3)) for j in range(3)) or \
-                    all(board[i][i] == symbol for i in range(3)) or \
-                    all(board[2 - i][i] == symbol for i in range(3)):
-                return symbol
+        for symbol in self.board.keys():
+            for mask in win_masks:
+                if self.board[symbol] & mask == mask:
+                    return symbol
 
-        #  Check if there's a draw.
-        if not any(cell == 0 for cell in self.board):
+        squashed_board = 0
+        for symbol in self.board.keys():
+            squashed_board |= self.board[symbol]
+
+        if squashed_board == 0b111_111_111:
             return "D"
 
-        #  Nothing significant has happened.
         return False
-
