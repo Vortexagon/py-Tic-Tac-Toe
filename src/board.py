@@ -1,6 +1,3 @@
-from copy import deepcopy
-
-
 class Board:
     def __init__(self):
         self.board = {"X": 0, "O": 0}
@@ -46,7 +43,7 @@ class Board:
         on_mask = 1 << (8 - index)
         off_mask = on_mask ^ 0b111_111_111
 
-        self.history.append(deepcopy(self.board))
+        self.history.append((index, chosen_layer, self.board[chosen_layer] & on_mask))
 
         for layer in self.board.keys():
             if layer == chosen_layer:
@@ -58,21 +55,31 @@ class Board:
         bit_mask = 1 << (8 - index)
         not_bit_mask = bit_mask ^ 0b111_111_111
 
-        self.history.append(deepcopy(self.board))
+        if any(self.board[symbol] & bit_mask for symbol in self.board):
+            self.history.append((index, "ANY", 1))
+        else:
+            self.history.append((index, "ANY", 0))
 
         for symbol in self.board.keys():
             self.board[symbol] &= not_bit_mask
 
     def undo(self):
         if len(self.history) > 0:
-            self.board = deepcopy(self.history.pop())
+            index, layer, val = self.history.pop()
+            if val:
+                self.set_cell(index, layer)
+            else:
+                self.clear_cell(index)
+
+            # Remove the entry that we will have created in the history stack.
+            self.history.pop()
 
     def is_ended(self):
         win_masks = [
-            *[0b111_000_000 >> index for index in range(0, 9, 3)],
-            *[0b100_100_100 >> index for index in range(3)],
-            *[0b100_010_001,
-              0b001_010_100]
+            *[0b111_000_000 >> index for index in range(0, 9, 3)],  # Check rows
+            *[0b100_100_100 >> index for index in range(3)],  # Check columns
+            *[0b100_010_001,  # Check the TL-BR diagonal
+              0b001_010_100]  # Check the BL-TR diagonal
         ]
 
         for symbol in self.board.keys():
