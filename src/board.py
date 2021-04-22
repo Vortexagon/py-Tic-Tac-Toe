@@ -69,9 +69,10 @@ class Board:
 
     def is_ended(self):
         win_masks = [
-            *[0b111 << index for index in range(0, 9, 3)],
+            *[0b111_000_000 >> index for index in range(0, 9, 3)],
             *[0b100_100_100 >> index for index in range(3)],
-            *[0b100010001, 0b001010100]
+            *[0b100_010_001,
+              0b001_010_100]
         ]
 
         for symbol in self.board.keys():
