@@ -35,10 +35,8 @@ game_result = board.is_ended()
 
 if game_result == user_symbol:
     print("User Wins!")
-
 elif game_result == comp_symbol:
     print("Computer Wins!")
-
 elif game_result == "D":
     print("Draw!")
 
