@@ -9,8 +9,25 @@ class Board:
     def __str__(self):
         board_string = ""
 
-        for symbol in self.board.keys():
-            board_string += symbol + ": " + bin(self.board[symbol])[2:].zfill(9) + "\n"
+        # Four "+" signs each separated by a 3-length "-" sequence.
+        horizontal_border = ("-" * 3).join(["+"] * 4)
+
+        grid_board = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+        for i in range(3):
+            for j in range(3):
+                for symbol in "XO":
+                    if self.board[symbol] & (1 << (8 - (3 * i + j))):
+                        grid_board[i][j] = symbol
+
+        for i in range(3):
+            board_string += horizontal_border + "\n"
+
+            cell_separator = " | "
+            row = [str(elem) if elem != 0 else str(3 * i + index + 1) for (index, elem) in enumerate(grid_board[i])]
+            board_string += f"| {cell_separator.join(row)} |" + "\n"
+
+        board_string += horizontal_border + "\n"
 
         return board_string
 
