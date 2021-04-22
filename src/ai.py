@@ -1,12 +1,14 @@
+import functools
 from random import randrange
 from math import inf
+from src.board import Board
 
 
 class RandomAI:
     @staticmethod
-    def move(board, symbol):
+    def move(board: Board, symbol: str) -> Board:
         while True:
-            comp_move = randrange(10)
+            comp_move: int = randrange(10)
             if comp_move in board.get_free_cells():
                 board.set_cell(comp_move, symbol)
                 break
@@ -15,10 +17,10 @@ class RandomAI:
 
 class OptimalAI:
     # The cache for storing the results of expensive, recursive minimax calls.
-    cache = dict()
+    cache: dict = {}
 
     @staticmethod
-    def minimax(board, alpha, beta, depth, maximising, own_symbol):
+    def minimax(board: Board, alpha: float, beta: float, depth: int, maximising: bool, own_symbol: str) -> float:
         opponent_symbol = "X" if own_symbol == "O" else "O"
 
         # Check if we've reached a terminal state. If so, return the state's score.
@@ -32,7 +34,7 @@ class OptimalAI:
             return -1 / depth
 
         # Create an identifier string based on: the board, alpha, beta, and whether we are trying to maximise or not.
-        state_hash = str([board.board, alpha, beta, maximising])
+        state_hash: str = str([board.board, alpha, beta, maximising])
 
         # If the result for this state is in the cache, just return that, instead of recursing the subtree.
         if state_hash in OptimalAI.cache:
@@ -42,7 +44,7 @@ class OptimalAI:
 
         for cell in board.get_free_cells():
             board.set_cell(cell, own_symbol if maximising else opponent_symbol)
-            score = OptimalAI.minimax(board, alpha, beta, depth + 1, not maximising, own_symbol)
+            score: float = OptimalAI.minimax(board, alpha, beta, depth + 1, not maximising, own_symbol)
             board.undo()
 
             if maximising:
@@ -63,7 +65,7 @@ class OptimalAI:
         return final_score
 
     @staticmethod
-    def move(board, symbol):
+    def move(board: Board, symbol: str) -> Board:
         best_score = -inf
         best_index = None
 
