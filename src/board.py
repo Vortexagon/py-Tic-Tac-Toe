@@ -29,6 +29,10 @@ class Board:
         return board_string
 
     def get_free_cells(self) -> list[int]:
+        """
+        Gets the free cells in the board.
+        :return: A list of free indexes
+        """
         squashed_board: int = 0
         for symbol in self.board.keys():
             squashed_board |= self.board[symbol]
@@ -37,6 +41,12 @@ class Board:
         return [i for i in range(9) if (256 >> i) & free_cells]
 
     def set_cell(self, index: int, chosen_layer: str) -> None:
+        """
+        Sets the index of the board with a symbol
+        :param index: The index of the cell to set
+        :param chosen_layer: The symbol to be placed / the layer of the bitboard
+        :return: None
+        """
         if chosen_layer not in self.board.keys():
             raise KeyError(f"{chosen_layer} isn't an entry in the bitboard.")
 
@@ -52,6 +62,11 @@ class Board:
                 self.board[layer] &= off_mask
 
     def clear_cell(self, index: int) -> None:
+        """
+        Clears the board at the given index
+        :param index: the index to clear
+        :return: None
+        """
         bit_mask: int = 1 << (8 - index)
         not_bit_mask: int = bit_mask ^ 0b111_111_111
 
@@ -64,6 +79,10 @@ class Board:
             self.board[symbol] &= not_bit_mask
 
     def undo(self) -> None:
+        """
+        Undo the last set_cell or clear_cell. Does nothing if history stack is empty
+        :return: None
+        """
         if len(self.history) > 0:
             index, layer, val = self.history.pop()
             if val:
@@ -75,6 +94,10 @@ class Board:
             self.history.pop()
 
     def is_ended(self):
+        """
+        Checks whether there is a win for any symbol, a draw or if nothing significant has happened.
+        :return: The symbol that won, or "D" for draw, or False if nothing significant has happened.
+        """
         win_masks: list[int] = [
             *[0b111_000_000 >> index for index in range(0, 9, 3)],  # Check rows
             *[0b100_100_100 >> index for index in range(3)],  # Check columns

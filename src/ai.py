@@ -7,6 +7,12 @@ from src.board import Board
 class RandomAI:
     @staticmethod
     def move(board: Board, symbol: str) -> Board:
+        """
+        Applies RandomAI's move.
+        :param board: The current state of the board
+        :param symbol: The symbol RandomAI should use
+        :return: The updated board
+        """
         while True:
             comp_move: int = randrange(10)
             if comp_move in board.get_free_cells():
@@ -21,6 +27,16 @@ class OptimalAI:
 
     @staticmethod
     def minimax(board: Board, alpha: float, beta: float, depth: int, maximising: bool, own_symbol: str) -> float:
+        """
+        Finds the best score possible for the maximiser or minimiser for the current board
+        :param board: The current state of the board
+        :param alpha: The best score so far for the maxmimiser
+        :param beta: The best score so far for the minimiser
+        :param depth: The depth the algorithm has reached down the game tree
+        :param maximising: If the function should act like the maxmiiser or the minimiser
+        :param own_symbol: The symbol the function should use for itself, and give the opposite to its opponent
+        :return: The best score possible for the maximiser or minimiser
+        """
         opponent_symbol = "X" if own_symbol == "O" else "O"
 
         # Check if we've reached a terminal state. If so, return the state's score.
@@ -66,6 +82,12 @@ class OptimalAI:
 
     @staticmethod
     def move(board: Board, symbol: str) -> Board:
+        """
+        Applies OptimalAI's move.
+        :param board: The current state of the board
+        :param symbol: The symbol RandomAI should use
+        :return: The updated board
+        """
         best_score = -inf
         best_index = None
 
