@@ -3,6 +3,12 @@ from board import Board
 
 
 def enter_move(board: Board, symbol: str) -> Board:
+    """
+    Gets an index from the user and returns the updated board after applying their move
+    :param board: The current state of the board
+    :param symbol: The symbol of the player
+    :return: The board updated with a mark at their choice
+    """
     while True:
         users_move: int = int(input("Enter a move: ")) - 1
         if users_move in board.get_free_cells():
