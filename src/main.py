@@ -2,18 +2,18 @@ from ai import OptimalAI
 from board import Board
 
 
-def enter_move(board, symbol):
+def enter_move(board: Board, symbol: str) -> Board:
     while True:
-        users_move = int(input("Enter a move: ")) - 1
+        users_move: int = int(input("Enter a move: ")) - 1
         if users_move in board.get_free_cells():
             board.set_cell(users_move, symbol)
             return board
 
 
-user_symbol = "X"
-comp_symbol = "O"
+user_symbol: str = "X"
+comp_symbol: str = "O"
 
-board = Board()
+board: Board = Board()
 
 # A game against OptimalAI.
 while not board.is_ended():
