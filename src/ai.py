@@ -1,4 +1,3 @@
-import functools
 from random import randrange
 from math import inf
 from src.board import Board
